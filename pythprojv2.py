@@ -2,21 +2,33 @@ import webbrowser
 import requests
 from bs4 import BeautifulSoup
 from tkinter import Tk, Label, Entry, Button, messagebox
+import csv
 
 # Fonction pour effectuer le web scraping des résultats de recherche
 def web_scraping(url, label):
     try:
+        resultats = []
         response = requests.get(url)
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             # Utiliser les méthodes de BeautifulSoup pour extraire les informations pertinentes des pages web
             # Ici, je stocke le résultat dans un fichier.
             for tag in soup.find_all(['p', 'span', 'h3']):
-                print(tag.text)
+                resultats.append(tag.text)
+            ecrire_dans_csv(resultats)  # Appel de la fonction pour écrire dans le fichier CSV
         else:
             label.config(text="Veuillez activer votre connexion", fg="red")
     except requests.exceptions.RequestException as e:
         label.config(text="Veuillez activer votre connexion", fg="red")
+
+
+def ecrire_dans_csv(resultats):
+    with open('resultats.csv', mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Résultats de recherche'])
+        for resultat in resultats:
+            writer.writerow([resultat])
+    print("Les résultats ont été écrits dans le fichier 'resultats.csv'")
 
 # Fonction appelée lorsque le bouton "Ajouter au dictionnaire" est cliqué
 def ajouter_mot_cle():
