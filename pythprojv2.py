@@ -11,7 +11,8 @@ def web_scraping(url, label):
             soup = BeautifulSoup(response.text, 'html.parser')
             # Utiliser les méthodes de BeautifulSoup pour extraire les informations pertinentes des pages web
             # Ici, je stocke le résultat dans un fichier.
-            print(soup)
+            for tag in soup.find_all(['p', 'span', 'h3']):
+                print(tag.text)
         else:
             label.config(text="Veuillez activer votre connexion", fg="red")
     except requests.exceptions.RequestException as e:
