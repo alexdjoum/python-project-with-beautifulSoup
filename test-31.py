@@ -14,6 +14,18 @@ def scrape_url(url):
     paragraphs = [p.get_text().strip().replace('\n', ' ').replace(',', '') for p in soup.find_all('p')]
     return title, paragraphs
 
+# Fonction pour obtenir le nombre de résultats de recherche pour un URL donné
+def get_number_of_results(url):
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36"}
+    result = requests.get(url, headers=headers)    
+
+    soup = BeautifulSoup(result.content, 'html.parser')
+
+    total_results_text = soup.find("div", {"id": "result-stats"}).find(text=True, recursive=False) # this will give you the outer text which is like 'About 1,410,000,000 results'
+    results_num = results_num = ''.join([num for num in total_results_text if num.isdigit()]) # now will clean it up and remove all the characters that are not a number . # now will clean it up and remove all the characters that are not a number .
+    return results_num 
+    print(results_num)
+
 # Fonction pour ajouter un mot-clé à la liste
 def add_keyword():
     keyword = keyword_entry.get()
@@ -40,8 +52,15 @@ def scrape_keywords():
         writer.writerow(['Mot-clé', 'URL', 'Titre', 'Contenu (balise p)'])
         
         for keyword in keywords:
+            # Affiche le nombre de résultats de recherche dans le label
+            label_nombre = tk.Label(window, text="")
+            label_nombre.pack(pady= 10)
+            label_nombre.config(text=f"Nombre de résultats pour {keyword}: {get_number_of_results('https://www.google.com/search?client=firefox-b-d&q='+keyword)}")
+
+            label_nombre.configure(fg="green")
+
             try:
-                for url in search(keyword, num_results=4, lang='fr'):
+                for url in search(keyword, num_results=20, lang='fr'):
                     title, paragraphs = scrape_url(url)
                     for paragraph in paragraphs:
                         writer.writerow([keyword, url.replace('\n', ' ').replace(',', ''), title, paragraph])
@@ -72,6 +91,8 @@ keyword_label.pack(side=tk.LEFT)
 
 keyword_entry = ttk.Entry(add_keyword_frame, width=20)
 keyword_entry.pack(side=tk.LEFT)
+
+#label_nombre = tk.Label()
 
 add_button = ttk.Button(add_keyword_frame, text='Ajouter', command=add_keyword)
 add_button.pack(side=tk.LEFT, padx=5)
